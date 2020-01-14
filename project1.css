@@ -1,0 +1,72 @@
+/* This CSS file was compiled from a SASS SCSS file. */
+div.logo h1 {
+  font-family: serif;
+  font-size: 24px;
+  font-weight: bold;
+}
+div.logo p {
+  font-family: serif;
+}
+
+div.row-header {
+  font-weight: bold;
+}
+
+article.poem h2, article.poem h1 {
+  font-family: serif;
+  color: black;
+}
+
+article.poem p, #cover-poem p {
+  line-height: 135%;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: 22px;
+  text-indent: -22px;
+}
+
+#cover-poem {
+  margin-left: 10px;
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+article.poem {
+  margin: 30px;
+  font-family: serif;
+}
+article.poem h1 {
+  font-size: 20px;
+  font-weight: bold;
+}
+article.poem h2 {
+  font-size: 17px;
+  font-weight: normal;
+}
+article.poem p.complete_date {
+  font-style: italic;
+}
+
+@media (min-width: 711px) {
+  div.logo {
+    margin: 30px;
+  }
+}
+@media (max-width: 710px) {
+  div.logo {
+    margin: 10px;
+  }
+}
+.bio {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.bio > div {
+  font-family: serif;
+  font-size: normal;
+  margin: 0px;
+  padding-top: 10px;
+  width: 340px;
+}
+
+/*# sourceMappingURL=lotd.css.map */

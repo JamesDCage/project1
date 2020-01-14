@@ -1,0 +1,99 @@
+// The following line will appear in the compiled CSS file:
+/* This CSS file was compiled from a SASS SCSS file. */
+
+// Must use a SCSS variable, SCSS nesting, and SCSS inheritance.
+
+// Variables
+
+$poem-h1-font-family: serif;
+$poem-body-font-family: serif;
+
+div.logo { // Nesting
+	// margin: 30px;
+	h1 {
+	    font-family: serif;
+	    font-size: 24px;
+	    font-weight: bold;
+	}
+	p {
+	    font-family: serif;
+	}
+}
+
+div.row-header {// Revision History
+font-weight: bold;
+}
+
+%poem-title { // Template Example
+	font-family: $poem-h1-font-family;
+    color: black;
+}
+
+%poem-lines { 
+        line-height: 135%;
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-left: 22px ;
+        text-indent: -22px ;
+    }
+
+#cover-poem { // ID Selector Requirement       
+	margin-left: 10px;
+	margin-top: 10px;
+	margin-bottom: 0;
+	p {
+	    @extend %poem-lines;
+	}
+}
+
+article.poem { // Nesting with Inheritance
+    margin: 30px;    
+    font-family: $poem-body-font-family;
+	h1 {
+	    @extend %poem-title; // Inheritance
+		font-size: 20px;
+        font-weight: bold;		
+	}
+	h2 {
+	    @extend %poem-title;
+		font-size: 17px;
+	    font-weight: normal; 
+	}
+    p { //
+        @extend %poem-lines;
+
+    }
+	p.complete_date {
+	    font-style: italic;
+	}	
+}
+
+
+// For biography page. Satisfies @media requiremnt
+@media (min-width: 711px) {
+	div.logo {
+		margin: 30px;
+	}
+}
+
+@media (max-width: 710px) {
+	div.logo {
+		margin: 10px;
+	}
+}
+
+// Flexbox details for bio page
+
+.bio {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.bio > div {
+	font-family: serif;
+	//background-color: springgreen;
+	font-size: normal;
+	margin: 0px;
+	padding-top: 10px;
+	width: 340px;
+}
