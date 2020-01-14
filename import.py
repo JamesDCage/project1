@@ -31,7 +31,7 @@ def main():
           (  user_id  SERIAL PRIMARY KEY,
              NAME     VARCHAR(127),
              username VARCHAR(63),
-             pw_hash  VARCHAR(127) ) """
+             pw_hash  VARCHAR(255) ) """
 
     create_reviews = """
         CREATE TABLE reviews
