@@ -5,33 +5,45 @@
 {% endblock %}
 
 {% block body %}
-      <h1>Finda Book</h1>
-      <div class="bio">
-        <div>
-          Search by:
-        </div>
-        <div>
-          field
-        </div>
-        <div>
-            text
-        </div>
-      </div>
+    <h1>Finda Book</h1>
+<div class="container">
+    <form action="/" method="post">
 
-    <form action="/register" method="post">
-        <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Your Name" type="text"/>
-        </div>
-        <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text"/>
-        </div>
-        <div class="form-group">
-            <input class="form-control" name="password" placeholder="Password" type="password"/>
-        </div>
-        <div class="form-group">
-            <input class="form-control" name="confirmation" placeholder="Re-enter Password" type="password"/>
-        </div>
-        <button class="btn btn-primary" type="submit">Register</button>
+            <input autocomplete="on" autofocus class="form-control input-sm" name="searchtext" placeholder="Enter Text to Search For" type="text"/>
+
+          <select id="fieldname" name="fieldname">
+            <option value="None"></option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="isbn">ISBN Number</option>
+          </select>
+
+        <button class="btn btn-primary" type="submit">Search</button>
     </form>
+
+  <div class="container">
+  <h2>Column Sizing</h2>
+  <p>The form below shows input elements with different widths using different .col-xs-* classes:</p>
+  <form>
+    <div class="form-group row">
+      <div class="col-xs-2">
+Search by:
+      </div>
+      <div class="col-xs-3">
+
+          <select id="fieldname" name="fieldname">
+            <option value="None"></option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="isbn">ISBN Number</option>
+          </select>
+      </div>
+      <div class="col-xs-4">
+
+        <input class="form-control" id="ex3" type="text">
+      </div>
+    </div>
+  </form>
+</div>
 
 {% endblock %}

@@ -32,10 +32,16 @@ engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 @login_required
 def index():
-    return render_template("index.html")
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        flash(request.form.get("searchtext"))
+        return render_template("index.html")
+    else:
+        return render_template("index.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
