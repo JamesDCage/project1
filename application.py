@@ -1,19 +1,15 @@
-import os
+# Used by Flask to generate pages and interact with databases
 
-from flask import Flask, flash, redirect, render_template, request, session
+import os
+from flask import Flask, flash, redirect, render_template, request, session, Markup
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
-from helpers import apology, login_required
-
-
+from helpers import login_required
 
 from tempfile import mkdtemp  # DO I NEED THIS??
-
-
-
 
 app = Flask(__name__)
 
@@ -37,8 +33,10 @@ db = scoped_session(sessionmaker(bind=engine))
 
 
 @app.route("/")
+@login_required
 def index():
     return render_template("index.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -50,31 +48,32 @@ def login():
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 403)
+        if not (request.form.get("username") and request.form.get("password")):
+            flash("Please enter your user name and password.")
+            return render_template("login.html")
 
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 403)
+        else:
+            # Query database for username
+            rows = db.execute("SELECT * FROM users WHERE username = :username",
+                              {"username": request.form.get("username")}).fetchall()
 
-        # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          {"username": request.form.get("username")}).fetchall()
+            # Ensure username exists and password is correct
+            if len(rows) != 1 or not check_password_hash(rows[0][3], request.form.get("password")):
+                flash(Markup('Username or password not found. Please <a href="/register" class="alert-link">register</a> or try again.'))
+                return render_template("login.html")
 
-        # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0][3], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            else:
+                # Remember which user has logged in
+                session["user_id"] = rows[0][2]
 
-        # Remember which user has logged in
-        session["user_id"] = rows[0][2]
-
-        # Redirect user to home page
-        return redirect("/")
+                # Redirect user to home page
+                flash(f"Welcome {rows[0][1]}!")
+                return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html")
+
 
 @app.route("/logout")
 def logout():
@@ -97,53 +96,51 @@ def register():
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # Ensure name was submitted
-        if not request.form.get("name"):
-            return apology("Please provide a name. It doesn't have to be yours.", 400)
-
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide user name", 400)
-
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 400)
+        # Ensure all fields are submitted
+        if not (request.form.get("name") and request.form.get("username") and
+                request.form.get("password") and request.form.get("confirmation")):
+            flash("All fields are required to register.")
+            return render_template("register.html")
 
         elif request.form.get("password") != request.form.get("confirmation"):
-            return apology("passwords must match", 400)
+            flash("Passwords must match. Please try again.")
+            return render_template("register.html")
 
-        # Be sure the user name is not duplicated. First, query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
+        else:
 
-        # Then, ensure no user by this name in database
-        if len(rows) != 0:
-            return apology("user name already exists", 400)
+            # Be sure the user name is not duplicated. First, query database for username
+            rows = db.execute("SELECT * FROM users WHERE username = :username",
+                              {"username": request.form.get("username")}).fetchall()
 
-        # Now insert user into database
-        pw_hash = generate_password_hash(request.form.get("password"))
-        new_user = request.form.get("username")
-        name = request.form.get("name")
+            # Then, ensure no user by this name in database
+            if len(rows) != 0:
+                flash("This user name is already taken. Please try again.")
+                return render_template("register.html")
 
-        db.execute("INSERT INTO users (name, username, pw_hash) VALUES (:name, :username, :pw_hash)",
-                   {"name": name, "username": new_user, "pw_hash": pw_hash})
+            else:
 
-        db.commit()  # None of the above SQL commands are sent to the db until this line
+                # Now insert user into database
+                pw_hash = generate_password_hash(request.form.get("password"))
+                new_user = request.form.get("username")
+                name = request.form.get("name")
 
+                db.execute("INSERT INTO users (name, username, pw_hash) VALUES (:name, :username, :pw_hash)",
+                           {"name": name, "username": new_user, "pw_hash": pw_hash})
 
-        # query for user to obtain id
+                db.commit()  # None of the above SQL commands are sent to the db until this line
 
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          {"username": request.form.get("username")}).fetchall()
+                # Now assign user to session - that is, log user in
+                # Query for user to obtain id
+                rows = db.execute("SELECT * FROM users WHERE username = :username",
+                                  {"username": request.form.get("username")}).fetchall()
 
-        # Remember which user has logged in
-        session["user_id"] = rows[0][2]
+                # Remember which user has logged in
+                session["user_id"] = rows[0][2]
 
-        # Redirect user to home page
-        return redirect("/")
+                # Redirect user to home page
+                flash(f"Welcome {rows[0][1]}!")
+                return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("register.html")
-
-
