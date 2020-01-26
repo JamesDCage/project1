@@ -38,8 +38,15 @@ def index():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        flash(request.form.get("searchtext"))
+        if not request.form.get("searchtext"):
+            flash("Please enter a full or partial author name, book title, or ISBN.")
+        elif request.form.get("fieldname") == "None":
+            flash("Please select the field to search ('Title', 'Author', or 'ISBN')")
+        else:
+            flash(request.form.get("searchtext"))
+
         return render_template("index.html")
+
     else:
         return render_template("index.html")
 

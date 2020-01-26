@@ -6,22 +6,25 @@
 
 {% block body %}
     <h1>Finda Book</h1>
+    </br>
 <div class="container">
     <form action="/" method="post">
 
             <input autocomplete="on" autofocus class="form-control input-sm" name="searchtext" placeholder="Enter Text to Search For" type="text"/>
 
           <select id="fieldname" name="fieldname">
-            <option value="None"></option>
+            <option value="None">Select Field</option>
             <option value="title">Title</option>
             <option value="author">Author</option>
-            <option value="isbn">ISBN Number</option>
+            <option value="isbn">ISBN</option>
           </select>
 
         <button class="btn btn-primary" type="submit">Search</button>
     </form>
+</div>
 
-  <div class="container">
+
+<div class="container">
   <h2>Column Sizing</h2>
   <p>The form below shows input elements with different widths using different .col-xs-* classes:</p>
   <form>
@@ -42,6 +45,7 @@ Search by:
 
         <input class="form-control" id="ex3" type="text">
       </div>
+      <button class="btn btn-primary" type="submit">Search</button>
     </div>
   </form>
 </div>
