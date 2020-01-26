@@ -12,9 +12,9 @@ from helpers import login_required
 from tempfile import mkdtemp  # DO I NEED THIS??
 
 app = Flask(__name__)
-
+#
 # REMOVE FOLLOWING LINE BEFORE SUBMITTING
-os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
+# os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
 #
 
 # Check for environment variable
@@ -40,12 +40,32 @@ def index():
     if request.method == "POST":
         if not request.form.get("searchtext"):
             flash("Please enter a full or partial author name, book title, or ISBN.")
-        elif request.form.get("fieldname") == "None":
+            return render_template("index.html")
+        elif not request.form.get("fieldname"):
             flash("Please select the field to search ('Title', 'Author', or 'ISBN')")
-        else:
-            flash(request.form.get("searchtext"))
+            return render_template("index.html")
 
+
+        # SQL command to find books
+
+        max_books = 100 # Maximium number of results to return
+        search_text = '%' + request.form.get("searchtext") + '%'
+        print(search_text)
+
+        find_books = f"""
+            SELECT * 
+            FROM books 
+            WHERE {request.form.get("fieldname")} LIKE :searchtext limit {max_books}"""
+
+        rows = db.execute(find_books, {"searchtext": search_text}).fetchall()
+
+        print("Results:", len(rows))
+
+        flash(find_books)
         return render_template("index.html")
+
+
+
 
     else:
         return render_template("index.html")

@@ -10,44 +10,16 @@
 <div class="container">
     <form action="/" method="post">
 
-            <input autocomplete="on" autofocus class="form-control input-sm" name="searchtext" placeholder="Enter Text to Search For" type="text"/>
+      <input autocomplete="on" autofocus class="form-control input-sm" name="searchtext" placeholder="Enter Text to Search For" type="text"/><br>
 
-          <select id="fieldname" name="fieldname">
-            <option value="None">Select Field</option>
-            <option value="title">Title</option>
-            <option value="author">Author</option>
-            <option value="isbn">ISBN</option>
-          </select>
+      <input type="radio" name="fieldname" value="title" checked> Title 
+      <input type="radio" name="fieldname" value="author"> Author
+      <input type="radio" name="fieldname" value="isbn"> ISBN       
 
-        <button class="btn btn-primary" type="submit">Search</button>
+      <button class="btn btn-primary" type="submit">Search</button>
     </form>
 </div>
 
 
-<div class="container">
-  <h2>Column Sizing</h2>
-  <p>The form below shows input elements with different widths using different .col-xs-* classes:</p>
-  <form>
-    <div class="form-group row">
-      <div class="col-xs-2">
-Search by:
-      </div>
-      <div class="col-xs-3">
-
-          <select id="fieldname" name="fieldname">
-            <option value="None"></option>
-            <option value="title">Title</option>
-            <option value="author">Author</option>
-            <option value="isbn">ISBN Number</option>
-          </select>
-      </div>
-      <div class="col-xs-4">
-
-        <input class="form-control" id="ex3" type="text">
-      </div>
-      <button class="btn btn-primary" type="submit">Search</button>
-    </div>
-  </form>
-</div>
 
 {% endblock %}
