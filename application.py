@@ -50,19 +50,52 @@ def index():
 
         max_books = 100 # Maximium number of results to return
         search_text = '%' + request.form.get("searchtext") + '%'
-        print(search_text)
+
 
         find_books = f"""
             SELECT * 
             FROM books 
-            WHERE {request.form.get("fieldname")} LIKE :searchtext limit {max_books}"""
+            WHERE UPPER({request.form.get("fieldname")}) LIKE UPPER(:searchtext) limit {max_books}"""
 
         rows = db.execute(find_books, {"searchtext": search_text}).fetchall()
 
-        print("Results:", len(rows))
+# Sort results - do this after successful print
+# Sort by field you searched?
 
-        flash(find_books)
-        return render_template("index.html")
+# print results
+
+# Don't print ID
+# Add link to book page - do this last?
+
+
+        # If any results returned, sort and add header info
+        # Sort results
+
+        field_name = request.form.get("fieldname")
+
+        def s_key(item):
+            global field_name
+            if field_name == "ISBN":
+                return item[1]
+            elif field_name == "Title":
+                return item[2]
+            else:
+                # Default to Author
+                return item[3]
+
+
+
+
+
+
+        if len(rows):
+            rows.sort(key=s_key)
+            rows.insert(0, ("ID","ISBN","Title","Author","Year"))
+            
+            
+
+        flash(f"{len(rows)} books found.")
+        return render_template("index.html", matrix=rows)
 
 
 
