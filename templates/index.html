@@ -34,7 +34,8 @@
     <tbody>
         {% for row in matrix[1:] %}
         <tr>
-            {% for c in row[1:] %}
+            <td><a href="https://www.w3schools.com?id={{ row[0] }}">{{ row[1] }}</a></td>
+            {% for c in row[2:] %}
             <td>{{ c }}</td>
             {% endfor %}
         </tr>

@@ -38,66 +38,64 @@ def index():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        if not request.form.get("searchtext"):
+
+        field_name = request.form.get("fieldname")
+        search_text = request.form.get("searchtext")
+        
+        if not field_name:
             flash("Please enter a full or partial author name, book title, or ISBN.")
             return render_template("index.html")
-        elif not request.form.get("fieldname"):
+        elif not search_text:
             flash("Please select the field to search ('Title', 'Author', or 'ISBN')")
             return render_template("index.html")
 
 
         # SQL command to find books
 
-        max_books = 100 # Maximium number of results to return
-        search_text = '%' + request.form.get("searchtext") + '%'
+        max_books = 200 # Maximium number of results to return
+        search_text = '%' + search_text + '%'
 
 
         find_books = f"""
             SELECT * 
             FROM books 
-            WHERE UPPER({request.form.get("fieldname")}) LIKE UPPER(:searchtext) limit {max_books}"""
+            WHERE UPPER({field_name}) LIKE UPPER(:searchtext) limit {max_books}"""
 
         rows = db.execute(find_books, {"searchtext": search_text}).fetchall()
+        hits = len(rows)
 
-# Sort results - do this after successful print
-# Sort by field you searched?
-
-# print results
-
-# Don't print ID
-# Add link to book page - do this last?
-
-
-        # If any results returned, sort and add header info
-        # Sort results
-
-        field_name = request.form.get("fieldname")
-
+        # Sort by field searched on. For example, in order by title if title search.
         def s_key(item):
-            global field_name
-            if field_name == "ISBN":
+
+            def clip_article(title):
+                # Remove leading articles (a, an, the) from title if present
+                # Only do this if there are 2 or more words in the title.
+                chunks = title.split(' ', 1)
+                if len(chunks)>1 and chunks[0].upper() in ['A','AN','THE']: 
+                    return chunks[1].upper()
+                return title.upper()
+
+            field_name = request.form.get("fieldname")
+            if field_name == "isbn":
                 return item[1]
-            elif field_name == "Title":
-                return item[2]
+            elif field_name == "title":
+                return clip_article(item[2])
             else:
                 # Default to Author
-                return item[3]
-
-
-
-
-
+                return item[3].upper()+clip_article(item[2])  # Sort by Author first, then by title.
 
         if len(rows):
+            # Sort, using key defined above
             rows.sort(key=s_key)
+            # Insert header, to be printed by jinja2 code on index.html
             rows.insert(0, ("ID","ISBN","Title","Author","Year"))
             
             
 
-        flash(f"{len(rows)} books found.")
+        flash(f"Search by {field_name} for {search_text[1:-1]}: {hits} books found.")
         return render_template("index.html", matrix=rows)
 
-
+# Add link to book page - do this last?
 
 
     else:

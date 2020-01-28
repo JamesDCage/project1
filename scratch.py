@@ -1,12 +1,8 @@
-name = "james"
+name = "james dewitt cage"
+chunks = name.split(' ',1)
+print(chunks)
+print(name.split(' ',1)[0])
+print(name.split(' ',1)[1])
 
-# SQL commands to create tables
-create_books = f"""
-    CREATE TABLE books
-        (  {name}   SERIAL PRIMARY KEY,
-            isbn    VARCHAR(15),
-            title   VARCHAR(63),
-            author  VARCHAR(63),
-            year    INT )  """
-
-print(create_books)
+if chunks[2]:
+    print('duh')
