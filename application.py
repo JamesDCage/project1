@@ -32,6 +32,15 @@ engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 
+@app.route("/book/<string:book_id>", methods=["GET", "POST"])
+@login_required
+def book(book_id):
+    print("HEY JAMES LOOK OVER HERE",book_id)
+
+    
+    return render_template("book.html", title="The Business", author="James Cage", year=1996, ISBN="04271965")
+
+
 @app.route("/", methods=["GET", "POST"])
 @login_required
 def index():
