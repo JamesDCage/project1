@@ -1,24 +1,25 @@
 import requests
 import urllib.parse
+import json
 
 from flask import redirect, render_template, request, session, flash, Markup
 from functools import wraps
 
 
-# FOLLOWING FUNCTION SHOULD BE 100% REPLACED BY BOOTSTRAP FLASH MESSAGES
-# def apology(message, code=400):
-#     """Render message as an apology to user."""
-#     def escape(s):
-#         """
-#         Escape special characters.
+def good_reads_info(isbn):
+    """
+    For a book (represented by its ISBN), extract review info from Goodreads.com
+    """
+    # This is the personal key of James Cage
+    my_key = "xHCRAkFbkWQAsRuaraWYsg"
 
-#         https://github.com/jacebrowning/memegen#special-characters
-#         """
-#         for old, new in [("-", "--"), (" ", "-"), ("_", "__"), ("?", "~q"),
-#                          ("%", "~p"), ("#", "~h"), ("/", "~s"), ("\"", "''")]:
-#             s = s.replace(old, new)
-#         return s
-#     return render_template("apology.html", top=code, bottom=message), code
+    # Request info from Goodreads
+    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": my_key, "isbns": isbn})
+
+    # Return the portion of the response that contains a dictionary of books-specific information
+    return res.json()["books"][0]
+
+
 
 
 def login_required(f):
@@ -36,4 +37,3 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ADD CODE TO GET INFO FROM GOODREADS

@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
-from helpers import login_required
+from helpers import login_required, good_reads_info
 
 from tempfile import mkdtemp  # DO I NEED THIS??
 
@@ -35,10 +35,35 @@ db = scoped_session(sessionmaker(bind=engine))
 @app.route("/book/<string:book_id>", methods=["GET", "POST"])
 @login_required
 def book(book_id):
-    print("HEY JAMES LOOK OVER HERE",book_id)
 
-    
-    return render_template("book.html", title="The Business", author="James Cage", year=1996, ISBN="04271965")
+    find_books = f"""
+        SELECT * 
+        FROM books 
+        WHERE book_id=:book_id limit 1"""    
+
+    rows = db.execute(find_books, {"book_id": book_id}).fetchall()
+    hits = len(rows)
+
+    if hits:
+        # Query found a book - display it
+        ISBN = rows[0][1]
+        title = rows[0][2]
+        author = rows[0][3]
+        year = rows[0][4]
+
+        goodreads_data = good_reads_info(ISBN)
+        gr_reviews = goodreads_data['work_ratings_count']
+        gr_rating = goodreads_data['average_rating']
+
+
+
+        
+        return render_template("book.html", ISBN=ISBN, title=title, author=author, year=year, gr_reviews=gr_reviews, gr_rating=gr_rating)
+    else:
+        # No books found for some reason
+        flash("OOPS! There's no record of that book in our database.")
+        return render_template("index.html")        
+
 
 
 @app.route("/", methods=["GET", "POST"])

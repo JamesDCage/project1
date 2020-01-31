@@ -1,8 +1,5 @@
-name = "james dewitt cage"
-chunks = name.split(' ',1)
-print(chunks)
-print(name.split(' ',1)[0])
-print(name.split(' ',1)[1])
+from helpers import login_required, good_reads_info
 
-if chunks[2]:
-    print('duh')
+
+
+print(good_reads_info("1402792808")['id'])
