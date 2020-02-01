@@ -7,11 +7,21 @@
 {% endblock %}
 
 {% block body %}
-    <h1>{{ title }}</h1>
-    <h2>By {{ author }}</h2>
-    ISBN {{ ISBN }}, {{ year }}
+    <h1>{{ book_data["title"] }}</h1>
+    <p>By {{ book_data["author"] }}</p>
+    <ul>
+        <li>ISBN {{ book_data["ISBN"] }}</li>
+        <li>First published {{ book_data["year"] }}</li>
+        {% if book_data["gr_reviews"] %}
+        <li>Goodreads review average {{ book_data["gr_rating"] }} from {{ book_data["gr_reviews"] }} reviews.</li>
+        {% else %}
+        <li>Book not found on Goodreads.</li>
+        {% endif %}
+    </ul>
+
+    
 <div class="container">
-    Put other stuff here
+
 </div>
 
 

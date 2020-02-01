@@ -16,8 +16,14 @@ def good_reads_info(isbn):
     # Request info from Goodreads
     res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": my_key, "isbns": isbn})
 
-    # Return the portion of the response that contains a dictionary of books-specific information
-    return res.json()["books"][0]
+    # If found return info. If not, return error message.
+    try:
+        # Return the portion of the response that contains a dictionary of books-specific information
+        return res.json()["books"][0]
+    except:
+        return None
+
+
 
 
 

@@ -46,19 +46,23 @@ def book(book_id):
 
     if hits:
         # Query found a book - display it
-        ISBN = rows[0][1]
-        title = rows[0][2]
-        author = rows[0][3]
-        year = rows[0][4]
+        book_data = {
+        "ISBN" : rows[0][1],
+        "title" : rows[0][2],
+        "author" : rows[0][3],
+        "year" : rows[0][4]  }
 
-        goodreads_data = good_reads_info(ISBN)
-        gr_reviews = goodreads_data['work_ratings_count']
-        gr_rating = goodreads_data['average_rating']
+        goodreads_data = good_reads_info(book_data["ISBN"])
+        if goodreads_data:
+            book_data["gr_reviews"] = goodreads_data['work_ratings_count']
+            book_data["gr_rating"] = goodreads_data['average_rating']
+        else:
+            book_data["gr_reviews"] = None
 
 
 
         
-        return render_template("book.html", ISBN=ISBN, title=title, author=author, year=year, gr_reviews=gr_reviews, gr_rating=gr_rating)
+        return render_template("book.html", book_data=book_data)
     else:
         # No books found for some reason
         flash("OOPS! There's no record of that book in our database.")
@@ -87,8 +91,8 @@ def index():
         # SQL command to find books
 
         max_books = 200 # Maximium number of results to return
+        # Format search text for "like" search in SQL
         search_text = '%' + search_text + '%'
-
 
         find_books = f"""
             SELECT * 
@@ -124,13 +128,8 @@ def index():
             # Insert header, to be printed by jinja2 code on index.html
             rows.insert(0, ("ID","ISBN","Title","Author","Year"))
             
-            
-
         flash(f"Search by {field_name} for {search_text[1:-1]}: {hits} books found.")
         return render_template("index.html", matrix=rows)
-
-# Add link to book page - do this last?
-
 
     else:
         return render_template("index.html")
