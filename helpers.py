@@ -16,16 +16,12 @@ def good_reads_info(isbn):
     # Request info from Goodreads
     res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": my_key, "isbns": isbn})
 
-    # If found return info. If not, return error message.
+    # If found return info. If not, return None.
     try:
         # Return the portion of the response that contains a dictionary of books-specific information
         return res.json()["books"][0]
     except:
         return None
-
-
-
-
 
 
 def login_required(f):
@@ -38,7 +34,6 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
             flash(Markup('You must register to use this site. Please <a href="/register" class="alert-link">register</a> or log in.'))
-            # return redirect("/login")
             return render_template("login.html")
         return f(*args, **kwargs)
     return decorated_function

@@ -36,37 +36,52 @@ db = scoped_session(sessionmaker(bind=engine))
 @login_required
 def book(book_id):
 
-    find_books = f"""
-        SELECT * 
-        FROM books 
-        WHERE book_id=:book_id limit 1"""    
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        my_rating= 4 #request.form.get("my_rating")
+        my_review= """Best non-fiction I've read in the last 10 years, at least. In the hands of a partisan, the events in this book would be unbelievable. But Gwynne's reporting is scrupulously honest and completely unapologetic for any group or person. His writing is crystal clear and unfiltered, and incredible, almost super-human feats are brought home to the reader. Highly recommended."""
+                 #request.form.get("my_review")
+        user_id = session["user_id"]
 
-    rows = db.execute(find_books, {"book_id": book_id}).fetchall()
-    hits = len(rows)
+        db.execute("INSERT INTO reviews (book_id, user_id, rating, body) VALUES (:book_id, :user_id, :rating, :body)",
+                    {"name": name, "username": new_user, "pw_hash": pw_hash})
 
-    if hits:
-        # Query found a book - display it
-        book_data = {
-        "ISBN" : rows[0][1],
-        "title" : rows[0][2],
-        "author" : rows[0][3],
-        "year" : rows[0][4]  }
-
-        goodreads_data = good_reads_info(book_data["ISBN"])
-        if goodreads_data:
-            book_data["gr_reviews"] = goodreads_data['work_ratings_count']
-            book_data["gr_rating"] = goodreads_data['average_rating']
-        else:
-            book_data["gr_reviews"] = None
-
-
+        db.commit()  # None of the above SQL commands are sent to the db until this line        
 
         
-        return render_template("book.html", book_data=book_data)
+
+
+
     else:
-        # No books found for some reason
-        flash("OOPS! There's no record of that book in our database.")
-        return render_template("index.html")        
+
+        find_books = f"""
+            SELECT * 
+            FROM books 
+            WHERE book_id=:book_id limit 1"""    
+
+        rows = db.execute(find_books, {"book_id": book_id}).fetchall()
+        hits = len(rows)
+
+        if hits:
+            # Query found a book - display it
+            book_data = {
+            "ISBN" : rows[0][1],
+            "title" : rows[0][2],
+            "author" : rows[0][3],
+            "year" : rows[0][4]  }
+
+            goodreads_data = good_reads_info(book_data["ISBN"])
+            if goodreads_data:
+                book_data["gr_reviews"] = goodreads_data['work_ratings_count']
+                book_data["gr_rating"] = goodreads_data['average_rating']
+            else:
+                book_data["gr_reviews"] = None
+                
+            return render_template("book.html", book_data=book_data)
+        else:
+            # No books found for some reason
+            flash("OOPS! There's no record of that book in our database.")
+            return render_template("index.html")        
 
 
 

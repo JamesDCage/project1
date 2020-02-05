@@ -19,10 +19,19 @@
         {% endif %}
     </ul>
 
+    <hr>
+    <div class="container">
+        <form action="/" method="post">
     
-<div class="container">
-
-</div>
+          <input autocomplete="on" autofocus class="form-control input-sm" name="searchtext" placeholder="Enter Text to Search For" type="text"/><br>
+    
+          <input type="radio" name="fieldname" value="title" checked> Title 
+          <input type="radio" name="fieldname" value="author"> Author
+          <input type="radio" name="fieldname" value="isbn"> ISBN       
+    
+          <button class="btn btn-primary" type="submit">Post</button>
+        </form>
+    </div>
 
 
 
