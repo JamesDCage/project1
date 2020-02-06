@@ -35,23 +35,19 @@ db = scoped_session(sessionmaker(bind=engine))
 @app.route("/book/<string:book_id>", methods=["GET", "POST"])
 @login_required
 def book(book_id):
-    print(request.method)
     # User reached route via POST (as by submitting a form via POST)
     # Note: as of Feb 6 20, no "else" statement. 
     if request.method == "POST":
-        my_rating= 4 #request.form.get("my_rating")
-        my_review= """Best non-fiction I've read in the last 10 years, at least. In the hands of a partisan, the events in this book would be unbelievable. But Gwynne's reporting is scrupulously honest and completely unapologetic for any group or person. His writing is crystal clear and unfiltered, and incredible, almost super-human feats are brought home to the reader. Highly recommended."""
-                #request.form.get("my_review")
+        my_rating = request.form.get("my_rating")
+        my_review = request.form.get("my_review")
         user_id = session["user_id"]
+        print(my_review)
 
         db.execute("INSERT INTO reviews (book_id, user_id, rating, body) VALUES (:book_id, :user_id, :rating, :body)",
                     {"book_id": book_id, "user_id": user_id, "rating": my_rating, "body":my_review})
 
-        print("HEY JAMES LOOK OVER HERE")
-
         db.commit()  # None of the above SQL commands are sent to the db until this line        
 
-    print("this is the first statement")
 
     find_books = f"""
         SELECT * 
@@ -181,7 +177,7 @@ def login():
 
             else:
                 # Remember which user has logged in
-                session["user_id"] = rows[0][2]
+                session["user_id"] = rows[0][0]
 
                 # Redirect user to home page
                 flash(f"Welcome {rows[0][1]}!")
@@ -252,7 +248,7 @@ def register():
                                   {"username": request.form.get("username")}).fetchall()
 
                 # Remember which user has logged in
-                session["user_id"] = rows[0][2]
+                session["user_id"] = rows[0][0]
 
                 # Redirect user to home page
                 flash(f"Welcome {rows[0][1]}!")
