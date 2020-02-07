@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block css_directory %}../{% endblock %}
+{% block css_directory %}../../{% endblock %}
 
 {% block title %}
     Finda Book by James
@@ -13,16 +13,29 @@
         <li>ISBN {{ book_data["ISBN"] }}</li>
         <li>First published {{ book_data["year"] }}</li>
         {% if book_data["gr_reviews"] %}
-        <li>Goodreads review average {{ book_data["gr_rating"] }} from {{ book_data["gr_reviews"] }} reviews.</li>
+            <li>Goodreads review average {{ book_data["gr_rating"] }} from {{ book_data["gr_reviews"] }} reviews.</li>
         {% else %}
-        <li>Book not found on Goodreads.</li>
+            <li>Book not found on Goodreads.</li>
         {% endif %}
+        {% if book_data["fb_reviews"] %}
+            <li>Finda Book review average {{ book_data["fb_rating"] }} from {{ book_data["fb_reviews"] }} reviews.</li>
+        {% else %}
+            <li>Not rated on Finda Book. You can be the first!</li>
+        {% endif %}
+
     </ul>
 
     <hr>
 
     {% if user_review %}
-        hello
+        <h3>Your Review</h2>
+        {% if user_review[0][2] %}
+            Your Rating: {{ user_review[0][2]}} Stars<br>
+        {% else %}
+            Not Rated<br>
+        {% endif %}
+        {{ user_review[0][3]}}
+        <hr>
     {% else %}
         <div class="container">
             <form method="post">
@@ -41,6 +54,15 @@
             </form>
             <hr>
         </div>
+    {% endif %}
+    {% if other_reviews %}
+        <h3>Community Reviews</h2>
+        
+            {% for review in other_reviews %}
+            {{ review[0] }}: {{ review[2] }} Stars <br>
+            {{ review[3] }}<br><br>
+            {% endfor %}
+            <hr>
     {% endif %}
 
 

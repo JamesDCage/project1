@@ -40,13 +40,19 @@ def book(book_id):
     if request.method == "POST":
         my_rating = request.form.get("my_rating")
         my_review = request.form.get("my_review")
-        user_id = session["user_id"]
-        print(my_review)
 
-        db.execute("INSERT INTO reviews (book_id, user_id, rating, body) VALUES (:book_id, :user_id, :rating, :body)",
-                    {"book_id": book_id, "user_id": user_id, "rating": my_rating, "body":my_review})
+        # Check to be sure the review is valid before inserting it into the database
+        if my_rating or my_review:
+            user_id = session["user_id"]
+            db.execute("INSERT INTO reviews (book_id, user_id, rating, body) VALUES (:book_id, :user_id, :rating, :body)",
+                        {"book_id": book_id, "user_id": user_id, "rating": my_rating, "body":my_review})
+            db.commit()  # None of the above SQL commands are sent to the db until this line   
+            # Thank the reader for the review
+            flash("Thank you for your review!")
 
-        db.commit()  # None of the above SQL commands are sent to the db until this line        
+        else:
+            # If no valid review was submitted, flash an error and continue building the page.
+            flash("A review must contain a star rating, some text, or both.")
 
 
     # Gather data on this book for display on page
@@ -56,7 +62,6 @@ def book(book_id):
         WHERE book_id=:book_id limit 1"""    
 
     rows = db.execute(find_books, {"book_id": book_id}).fetchall()
-
 
     hits = len(rows)
     if hits:
@@ -91,6 +96,16 @@ def book(book_id):
                     WHERE  book_id=:book_id"""
 
     rows = db.execute(book_query, {"book_id":book_id}).fetchall()
+
+    # Add Finda Book review information to book_data
+    book_data["fb_reviews"] = len(rows) if len(rows) else None
+    num_ratings,sum_ratings = 0,0
+    for review in rows:
+        if review[2]:
+            num_ratings += 1
+            sum_ratings += review[2]
+    book_data["fb_rating"] = None if not num_ratings else str(sum_ratings/num_ratings)[:4]
+
 
     # If the current user has reviewed this book, put that review in a list
     user_review = [review for review in rows if review[1] == session["user_id"]]
