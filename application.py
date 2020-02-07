@@ -1,7 +1,7 @@
 # Used by Flask to generate pages and interact with databases
 
 import os
-from flask import Flask, flash, redirect, render_template, request, session, Markup
+from flask import Flask, flash, redirect, render_template, request, session, Markup, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -14,13 +14,12 @@ from tempfile import mkdtemp  # DO I NEED THIS??
 app = Flask(__name__)
 
 # REMOVE FOLLOWING LINE BEFORE SUBMITTING
-os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
+# os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
 
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
-
 
 # Configure session to use filesystem
 app.config["SESSION_PERMANENT"] = False
@@ -31,6 +30,11 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
+
+@app.route("/api/<int:isbn>", methods=["GET", "POST"])
+def give_json(isbn):
+    pass
+    # RETURN TO PROGRAMMING HERE 
 
 @app.route("/book/<string:book_id>", methods=["GET", "POST"])
 @login_required
@@ -81,8 +85,9 @@ def book(book_id):
 
     else:
         # No books found for some reason
-        flash("OOPS! There's no record of that book in our database.")
-        return render_template("index.html")        
+        # flash("OOPS! There's no record of that book in our database.")
+        # return render_template("index.html") 
+        return "No such book.", 404      
 
     # Now get all reviews for this book
 
