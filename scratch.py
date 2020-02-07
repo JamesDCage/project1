@@ -13,8 +13,11 @@ db = scoped_session(sessionmaker(bind=engine))
 
 # print(good_reads_info("1402792808"))
 
+this_user = 2
+this_book = 4684
+
 rows = db.execute("SELECT * FROM reviews WHERE book_id =:book_id AND user_id=:user_id",
-                    {"book_id":4684, "user_id":1}).fetchall()
+                    {"book_id":this_book, "user_id":this_user}).fetchall()
 
 if rows:
     print(rows)
@@ -22,11 +25,23 @@ else:
     print("Nothing here")
 
 rows = db.execute("SELECT * FROM reviews WHERE book_id =:book_id AND NOT user_id=:user_id",
-                    {"book_id":4684, "user_id":1}).fetchall()
+                    {"book_id":this_book, "user_id":this_user}).fetchall()
 
 print(rows)
 
-rows = db.execute("SELECT users.name, reviews.rating, reviews.body FROM reviews JOIN users ON reviews.user_id=users.user_id",
-                    {"book_id":4684, "user_id":1}).fetchall()
+book_query = """ SELECT users.name, 
+                        users.user_id, 
+                        reviews.rating, 
+                        reviews.body 
+                 FROM   reviews 
+                        JOIN users 
+                          ON reviews.user_id = users.user_id 
+                 WHERE  book_id=:book_id"""
+
+rows = db.execute(book_query, {"book_id":this_book}).fetchall()
 
 print(rows)
+
+print("me review", [review for review in rows if review[1] == this_user])
+
+print([review for review in rows if not review[1] == this_user])

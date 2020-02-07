@@ -12,10 +12,10 @@ from helpers import login_required, good_reads_info
 from tempfile import mkdtemp  # DO I NEED THIS??
 
 app = Flask(__name__)
-#
+
 # REMOVE FOLLOWING LINE BEFORE SUBMITTING
-# os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
-#
+os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
+
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
@@ -49,16 +49,18 @@ def book(book_id):
         db.commit()  # None of the above SQL commands are sent to the db until this line        
 
 
+    # Gather data on this book for display on page
     find_books = f"""
         SELECT * 
         FROM books 
         WHERE book_id=:book_id limit 1"""    
 
     rows = db.execute(find_books, {"book_id": book_id}).fetchall()
-    hits = len(rows)
 
+
+    hits = len(rows)
     if hits:
-        # Query found a book - display it
+        # If a book is found in the db, pack the data for display on page
         book_data = {
         "ISBN" : rows[0][1],
         "title" : rows[0][2],
@@ -71,18 +73,39 @@ def book(book_id):
             book_data["gr_rating"] = goodreads_data['average_rating']
         else:
             book_data["gr_reviews"] = None
-            
-        return render_template("book.html", book_data=book_data)
-
-    
-
-
-
 
     else:
         # No books found for some reason
         flash("OOPS! There's no record of that book in our database.")
         return render_template("index.html")        
+
+    # Now get all reviews for this book
+
+    # book_query = """ SELECT users.name, 
+    #                         users.user_id, 
+    #                         reviews.rating, 
+    #                         reviews.body 
+    #                 FROM   reviews 
+    #                         JOIN users 
+    #                         ON reviews.user_id = users.user_id 
+    #                 WHERE  book_id=:book_id"""
+
+    # rows = db.execute(book_query, {"book_id":book_id}).fetchall()
+
+    # # If the current user has reviewed this book, put that review in a list
+    # user_review = [review for review in rows if review[1] == session["user_id"]]
+
+    # # Put reviews by other users in a separate list
+    # other_reviews = [review for review in rows if not review[1] == session["user_id"]]
+
+    user_review, other_reviews = []
+
+    # Display page
+    return render_template("book.html", book_data=book_data, user_review=user_review, other_reviews=other_reviews)
+
+
+
+
 
 
 
