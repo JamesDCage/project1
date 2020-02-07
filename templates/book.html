@@ -20,24 +20,28 @@
     </ul>
 
     <hr>
-    <div class="container">
-        <form method="post">
 
-          <label for="my_rating">Rate this book:</label>
-          <input type="radio" name="my_rating" value=1>1 
-          <input type="radio" name="my_rating" value=2>2
-          <input type="radio" name="my_rating" value=3>3  
-          <input type="radio" name="my_rating" value=4>4        
-          <input type="radio" name="my_rating" value=5>5 Stars  <br>
+    {% if user_review %}
+        hello
+    {% else %}
+        <div class="container">
+            <form method="post">
 
-          <label for="my_review">What did you think?</label>
-          <textarea class="form-control" id="my_review" name="my_review" rows="3"></textarea> <br>
+            <label for="my_rating">Rate this book:</label>
+            <input type="radio" name="my_rating" value=1>1 
+            <input type="radio" name="my_rating" value=2>2
+            <input type="radio" name="my_rating" value=3>3  
+            <input type="radio" name="my_rating" value=4>4        
+            <input type="radio" name="my_rating" value=5>5 Stars  <br>
 
-          <button class="btn btn-primary" type="submit">Post</button>
-        </form>
-        <hr>
-    </div>
+            <label for="my_review">What did you think?</label>
+            <textarea class="form-control" id="my_review" name="my_review" rows="3"></textarea> <br>
 
+            <button class="btn btn-primary" type="submit">Post</button>
+            </form>
+            <hr>
+        </div>
+    {% endif %}
 
 
 

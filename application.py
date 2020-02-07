@@ -81,24 +81,22 @@ def book(book_id):
 
     # Now get all reviews for this book
 
-    # book_query = """ SELECT users.name, 
-    #                         users.user_id, 
-    #                         reviews.rating, 
-    #                         reviews.body 
-    #                 FROM   reviews 
-    #                         JOIN users 
-    #                         ON reviews.user_id = users.user_id 
-    #                 WHERE  book_id=:book_id"""
+    book_query = """ SELECT users.name, 
+                            users.user_id, 
+                            reviews.rating, 
+                            reviews.body 
+                    FROM   reviews 
+                            JOIN users 
+                            ON reviews.user_id = users.user_id 
+                    WHERE  book_id=:book_id"""
 
-    # rows = db.execute(book_query, {"book_id":book_id}).fetchall()
+    rows = db.execute(book_query, {"book_id":book_id}).fetchall()
 
-    # # If the current user has reviewed this book, put that review in a list
-    # user_review = [review for review in rows if review[1] == session["user_id"]]
+    # If the current user has reviewed this book, put that review in a list
+    user_review = [review for review in rows if review[1] == session["user_id"]]
 
-    # # Put reviews by other users in a separate list
-    # other_reviews = [review for review in rows if not review[1] == session["user_id"]]
-
-    user_review, other_reviews = []
+    # Put reviews by other users in a separate list
+    other_reviews = [review for review in rows if not review[1] == session["user_id"]]
 
     # Display page
     return render_template("book.html", book_data=book_data, user_review=user_review, other_reviews=other_reviews)
