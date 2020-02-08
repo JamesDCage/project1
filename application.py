@@ -33,7 +33,7 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/api/<int:isbn>", methods=["GET", "POST"])
 def give_json(isbn):
-stats_query = """
+    stats_query = """
             SELECT Avg(rating), 
                    Count(review_id) 
             FROM   reviews 

@@ -15,38 +15,55 @@ db = scoped_session(sessionmaker(bind=engine))
 
 # print(good_reads_info("1402792808"))
 
-columns = ('title', 'author','year', 'isbn' )
 
-json_query = """
-            SELECT title, 
-                   author, 
-                   year, 
-                   isbn 
-            FROM   books 
-            WHERE  isbn = '0670037729' """
 
-json_dict ={columns[x]: db.execute(json_query).fetchall()[0][x] for x in range(4)}
-print(json_dict)
+# json_query = """
+#             SELECT title, 
+#                    author, 
+#                    year, 
+#                    isbn 
+#             FROM   books 
+#             WHERE  isbn = '0670037729' 
+# """
+
+# json_dict ={columns[x]: db.execute(json_query).fetchall()[0][x] for x in range(4)}
+# print(json_dict)
 # book_raw = db.execute(json_query).fetchall()
 # print(book_raw)
 
-stats_query = """
-            SELECT Avg(rating), 
-                   Count(review_id) 
-            FROM   reviews 
-                   JOIN books 
-                     ON books.book_id = reviews.book_id 
-            WHERE  isbn = '0670037729' """
+columns = ('title', 'author','year', 'isbn', 'average_score', 'review_count')
 
-rows = db.execute(stats_query).fetchall()
- 
+stats_query = f"""
+              SELECT {','.join(columns[:4])},
+                     Avg(rating)            AS average_score, 
+                     Count(reviews.book_id) AS review_count 
+              FROM   books 
+                     FULL OUTER JOIN reviews 
+                            ON books.book_id = reviews.book_id 
+              WHERE  isbn=:isbn
+              GROUP  BY reviews.book_id, 
+                     {','.join(columns[:4])}"""
 
 
-json_dict["average_score"], json_dict["review_count"] = float(rows[0][0]), rows[0][1]
+rows = db.execute(stats_query, {"isbn":'J0670037729'}).fetchall()
+if len(rows):
+    json_dict={columns[x]: rows[0][x] for x in range(len(columns))}
+    json_dict["average_score"] = float(json_dict["average_score"])
+else:
+    json_dict='crap'
 
-app_json = json.dumps(json_dict)
+print(json_dict)
+app = Flask(__name__)
+with app.app_context():
+    xxx = jsonify(json_dict)
 
-print(app_json)
+print(xxx)
+
+# json_dict["average_score"], json_dict["review_count"] = float(rows[0][0]), rows[0][1]
+
+# app_json = json.dumps(json_dict)
+
+# print(app_json)
 
 # this_user = 2
 # this_book = 4684
