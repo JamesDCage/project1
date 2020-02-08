@@ -33,7 +33,15 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/api/<int:isbn>", methods=["GET", "POST"])
 def give_json(isbn):
-    pass
+stats_query = """
+            SELECT Avg(rating), 
+                   Count(review_id) 
+            FROM   reviews 
+                   JOIN books 
+                     ON books.book_id = reviews.book_id 
+            WHERE  isbn = '0670037729' """
+
+
     # RETURN TO PROGRAMMING HERE 
 
 @app.route("/book/<string:book_id>", methods=["GET", "POST"])
@@ -95,10 +103,10 @@ def book(book_id):
                             users.user_id, 
                             reviews.rating, 
                             reviews.body 
-                    FROM   reviews 
+                     FROM   reviews 
                             JOIN users 
                             ON reviews.user_id = users.user_id 
-                    WHERE  book_id=:book_id"""
+                     WHERE  book_id=:book_id"""
 
     rows = db.execute(book_query, {"book_id":book_id}).fetchall()
 
