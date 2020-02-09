@@ -2,6 +2,7 @@ import requests
 from flask import redirect, render_template, request, session, flash, Markup
 from functools import wraps
 
+
 def good_reads_info(isbn):
     """
     For a book (represented by its ISBN), extract review info from Goodreads.com

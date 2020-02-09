@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required, good_reads_info
 
 # REMOVE FOLLOWING LINE BEFORE SUBMITTING
-# os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
+os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
@@ -41,30 +41,30 @@ def finda_book_info(isbn=None, book_id=None):
         return None
 
     # The following info about the book will be returned
-    columns = ('title', 'author','year', 'isbn', 'average_score', 'review_count')
+    columns = ('title', 'author', 'year', 'isbn', 'average_score', 'review_count')
 
     # SQL query
     stats_query = f"""
                 SELECT {','.join(columns[:4])},
-                        Avg(rating)            AS average_score, 
-                        Count(reviews.book_id) AS review_count 
-                FROM   books 
-                        FULL OUTER JOIN reviews 
-                                ON books.book_id = reviews.book_id 
+                        Avg(rating)            AS average_score,
+                        Count(reviews.book_id) AS review_count
+                FROM   books
+                        FULL OUTER JOIN reviews
+                                ON books.book_id = reviews.book_id
                 WHERE  {where_look}
-                GROUP  BY reviews.book_id, 
+                GROUP  BY reviews.book_id,
                         {','.join(columns[:4])}"""
 
     # Query the database, substituting the isbn number
-    rows = db.execute(stats_query, {"isbn":isbn, "book_id":book_id}).fetchall()
+    rows = db.execute(stats_query, {"isbn": isbn, "book_id": book_id}).fetchall()
 
     # If book is found, return a dictionary of book info. Otherwise return "None"
     if len(rows):
-        json_dict={columns[x]: rows[0][x] for x in range(len(columns))}
+        json_dict = {columns[x]: rows[0][x] for x in range(len(columns))}
         # Convert SQL DECIMAL number to Python float (if present)
         json_dict["average_score"] = float(json_dict["average_score"]) if json_dict["average_score"] else None
         return json_dict
-    else: # If book is not found in database
+    else:  # If book is not found in database
         return None
 
 
@@ -97,8 +97,8 @@ def book(book_id):
         if my_rating or my_review:
             user_id = session["user_id"]
             db.execute("INSERT INTO reviews (book_id, user_id, rating, body) VALUES (:book_id, :user_id, :rating, :body)",
-                        {"book_id": book_id, "user_id": user_id, "rating": my_rating, "body":my_review})
-            db.commit()  # None of the above SQL commands are sent to the db until this line   
+                       {"book_id": book_id, "user_id": user_id, "rating": my_rating, "body": my_review})
+            db.commit()  # None of the above SQL commands are sent to the db until this line
             flash("Thank you for your review!")
         else:
             # If no valid review was submitted, flash an error and continue building the page.
@@ -116,19 +116,19 @@ def book(book_id):
         else:
             book_dict["gr_reviews"] = None
     else:
-        # No books found 
-        return "No such book.", 404      
+        # No books found
+        return "No such book.", 404
 
     # Now get all reviews for this book
-    book_query = """ SELECT users.name, 
-                            users.user_id, 
-                            reviews.rating, 
-                            reviews.body 
-                     FROM   reviews 
-                            JOIN users 
-                            ON reviews.user_id = users.user_id 
+    book_query = """ SELECT users.name,
+                            users.user_id,
+                            reviews.rating,
+                            reviews.body
+                     FROM   reviews
+                            JOIN users
+                            ON reviews.user_id = users.user_id
                      WHERE  book_id=:book_id"""
-    rows = db.execute(book_query, {"book_id":book_id}).fetchall()
+    rows = db.execute(book_query, {"book_id": book_id}).fetchall()
 
     # If the current user has reviewed this book, put that review in a list
     user_review = [review for review in rows if review[1] == session["user_id"]]
@@ -149,7 +149,7 @@ def index():
 
         field_name = request.form.get("fieldname")
         search_text = request.form.get("searchtext")
-        
+
         if not field_name:
             flash("Please enter a full or partial author name, book title, or ISBN.")
             return render_template("index.html")
@@ -157,28 +157,28 @@ def index():
             flash("Please select the field to search ('Title', 'Author', or 'ISBN')")
             return render_template("index.html")
 
-        max_books = 200 # Maximium number of results to return
+        max_books = 200  # Maximium number of results to return
         # Format search text for "like" search in SQL
         search_text = '%' + search_text + '%'
 
         # SQL command to find books
         find_books = f"""
-            SELECT * 
-            FROM books 
+            SELECT *
+            FROM books
             WHERE UPPER({field_name}) LIKE UPPER(:searchtext) limit {max_books}"""
 
-        rows = db.execute(find_books, {"searchtext":search_text}).fetchall()
+        rows = db.execute(find_books, {"searchtext": search_text}).fetchall()
         hits = len(rows)
 
         # Define sort key. "item" is passed by sort method of list (below)
         # Sort by field searched on. For example, in order by title if title search.
         def s_key(item):
-            
+
             def clip_article(title):
                 # Remove leading articles (a, an, the) from title if present
                 # Only do this if there are 2 or more words in the title.
                 chunks = title.split(' ', 1)
-                if len(chunks)>1 and chunks[0].upper() in ['A','AN','THE']: 
+                if len(chunks) > 1 and chunks[0].upper() in ['A', 'AN', 'THE']:
                     return chunks[1].upper()
                 return title.upper()
 
@@ -189,14 +189,14 @@ def index():
                 return clip_article(item[2])
             else:
                 # Default to sorting by author first, then by title.
-                return item[3].upper()+clip_article(item[2])  
+                return item[3].upper()+clip_article(item[2])
 
         if len(rows):
             # Sort, using key defined above
             rows.sort(key=s_key)
             # Insert header, to be printed by jinja2 code on index.html
-            rows.insert(0, ("ID","ISBN","Title","Author","Year"))
-            
+            rows.insert(0, ("ID", "ISBN", "Title", "Author", "Year"))
+
         flash(f"Search by {field_name} for {search_text[1:-1]}: {hits} books found.")
         return render_template("index.html", matrix=rows)
 
