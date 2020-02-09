@@ -31,24 +31,67 @@ engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 
-@app.route("/api/<int:isbn>", methods=["GET", "POST"])
+def finda_book_info(isbn=None, book_id=None):
+    """ For a book represented by its ISBN, return info from Finda Book website """
+
+    # Determine field to search on
+    if isbn:
+        where_look = "isbn=:isbn"
+    elif book_id:
+        where_look = "books.book_id=:book_id"
+    else:
+        return None
+
+    # The following info about the book will be returned
+    columns = ('title', 'author','year', 'isbn', 'average_score', 'review_count')
+
+    # SQL query
+    stats_query = f"""
+                SELECT {','.join(columns[:4])},
+                        Avg(rating)            AS average_score, 
+                        Count(reviews.book_id) AS review_count 
+                FROM   books 
+                        FULL OUTER JOIN reviews 
+                                ON books.book_id = reviews.book_id 
+                WHERE  {where_look}
+                GROUP  BY reviews.book_id, 
+                        {','.join(columns[:4])}"""
+
+    # Query the database, substituting the isbn number
+    rows = db.execute(stats_query, {"isbn":isbn, "book_id":book_id}).fetchall()
+
+    # If book is found, return a dictionary of book info. Otherwise return "None"
+    if len(rows):
+        json_dict={columns[x]: rows[0][x] for x in range(len(columns))}
+        # Convert SQL DECIMAL number to Python float (if present)
+        json_dict["average_score"] = float(json_dict["average_score"]) if json_dict["average_score"] else None
+        return json_dict
+    else: # If book is not found in database
+        return None
+
+
+@app.route("/api/<isbn>", methods=["GET", "POST"])
 def give_json(isbn):
-    stats_query = """
-            SELECT Avg(rating), 
-                   Count(review_id) 
-            FROM   reviews 
-                   JOIN books 
-                     ON books.book_id = reviews.book_id 
-            WHERE  isbn = '0670037729' """
+    """ Return Finda Book database about book in json format """
+    json_dict = finda_book_info(isbn=isbn)
 
+    # If book exists in database, convert to json and return.
+    if json_dict:
+        app = Flask(__name__)
+        with app.app_context():
+            book_json = jsonify(json_dict)
+        return book_json
 
-    # RETURN TO PROGRAMMING HERE 
+    # If book not found, return 404 error
+    else:
+        return "ISBN Not Found", 404
+
 
 @app.route("/book/<string:book_id>", methods=["GET", "POST"])
 @login_required
 def book(book_id):
     # User reached route via POST (as by submitting a form via POST)
-    # Note: as of Feb 6 20, no "else" statement. 
+    # Insert the user's review into database if valid
     if request.method == "POST":
         my_rating = request.form.get("my_rating")
         my_review = request.form.get("my_review")
@@ -59,46 +102,28 @@ def book(book_id):
             db.execute("INSERT INTO reviews (book_id, user_id, rating, body) VALUES (:book_id, :user_id, :rating, :body)",
                         {"book_id": book_id, "user_id": user_id, "rating": my_rating, "body":my_review})
             db.commit()  # None of the above SQL commands are sent to the db until this line   
-            # Thank the reader for the review
             flash("Thank you for your review!")
-
         else:
             # If no valid review was submitted, flash an error and continue building the page.
             flash("A review must contain a star rating, some text, or both.")
 
-
     # Gather data on this book for display on page
-    find_books = f"""
-        SELECT * 
-        FROM books 
-        WHERE book_id=:book_id limit 1"""    
+    book_dict = finda_book_info(book_id=book_id)
 
-    rows = db.execute(find_books, {"book_id": book_id}).fetchall()
-
-    hits = len(rows)
-    if hits:
-        # If a book is found in the db, pack the data for display on page
-        book_data = {
-        "ISBN" : rows[0][1],
-        "title" : rows[0][2],
-        "author" : rows[0][3],
-        "year" : rows[0][4]  }
-
-        goodreads_data = good_reads_info(book_data["ISBN"])
+    if book_dict:
+        # If a book is found in the db, add Goodreads data for display on book page
+        goodreads_data = good_reads_info(book_dict["isbn"])
         if goodreads_data:
-            book_data["gr_reviews"] = goodreads_data['work_ratings_count']
-            book_data["gr_rating"] = goodreads_data['average_rating']
+            book_dict["gr_reviews"] = goodreads_data['work_ratings_count']
+            book_dict["gr_rating"] = goodreads_data['average_rating']
         else:
-            book_data["gr_reviews"] = None
-
+            book_dict["gr_reviews"] = None
     else:
-        # No books found for some reason
-        # flash("OOPS! There's no record of that book in our database.")
-        # return render_template("index.html") 
+        # No books found 
+        flash("OOPS! There's no record of that book in our database.")
         return "No such book.", 404      
 
     # Now get all reviews for this book
-
     book_query = """ SELECT users.name, 
                             users.user_id, 
                             reviews.rating, 
@@ -107,32 +132,16 @@ def book(book_id):
                             JOIN users 
                             ON reviews.user_id = users.user_id 
                      WHERE  book_id=:book_id"""
-
     rows = db.execute(book_query, {"book_id":book_id}).fetchall()
-
-    # Add Finda Book review information to book_data
-    book_data["fb_reviews"] = len(rows) if len(rows) else None
-    num_ratings,sum_ratings = 0,0
-    for review in rows:
-        if review[2]:
-            num_ratings += 1
-            sum_ratings += review[2]
-    book_data["fb_rating"] = None if not num_ratings else str(sum_ratings/num_ratings)[:4]
-
 
     # If the current user has reviewed this book, put that review in a list
     user_review = [review for review in rows if review[1] == session["user_id"]]
 
-    # Put reviews by other users in a separate list
+    # Put reviews by other users (if any) in a separate list
     other_reviews = [review for review in rows if not review[1] == session["user_id"]]
 
     # Display page
-    return render_template("book.html", book_data=book_data, user_review=user_review, other_reviews=other_reviews)
-
-
-
-
-
+    return render_template("book.html", book_data=book_dict, user_review=user_review, other_reviews=other_reviews)
 
 
 @app.route("/", methods=["GET", "POST"])

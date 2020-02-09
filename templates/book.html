@@ -10,15 +10,15 @@
     <h1>{{ book_data["title"] }}</h1>
     <p>By {{ book_data["author"] }}</p>
     <ul>
-        <li>ISBN {{ book_data["ISBN"] }}</li>
+        <li>ISBN {{ book_data["isbn"] }}</li>
         <li>First published {{ book_data["year"] }}</li>
         {% if book_data["gr_reviews"] %}
             <li>Goodreads review average {{ book_data["gr_rating"] }} from {{ book_data["gr_reviews"] }} reviews.</li>
         {% else %}
             <li>Book not found on Goodreads.</li>
         {% endif %}
-        {% if book_data["fb_reviews"] %}
-            <li>Finda Book review average {{ book_data["fb_rating"] }} from {{ book_data["fb_reviews"] }} reviews.</li>
+        {% if book_data["review_count"] %}
+            <li>Finda Book review average {{ book_data["average_score"]|round(2) }} from {{ book_data["review_count"] }} reviews.</li>
         {% else %}
             <li>Not rated on Finda Book. You can be the first!</li>
         {% endif %}

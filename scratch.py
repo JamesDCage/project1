@@ -7,14 +7,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required, good_reads_info
-import json
+from application import finda_book_info
 
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 # print(good_reads_info("1402792808"))
-
 
 
 # json_query = """
@@ -31,26 +30,28 @@ db = scoped_session(sessionmaker(bind=engine))
 # book_raw = db.execute(json_query).fetchall()
 # print(book_raw)
 
-columns = ('title', 'author','year', 'isbn', 'average_score', 'review_count')
+# columns = ('title', 'author','year', 'isbn', 'average_score', 'review_count')
 
-stats_query = f"""
-              SELECT {','.join(columns[:4])},
-                     Avg(rating)            AS average_score, 
-                     Count(reviews.book_id) AS review_count 
-              FROM   books 
-                     FULL OUTER JOIN reviews 
-                            ON books.book_id = reviews.book_id 
-              WHERE  isbn=:isbn
-              GROUP  BY reviews.book_id, 
-                     {','.join(columns[:4])}"""
+# stats_query = f"""
+#               SELECT {','.join(columns[:4])},
+#                      Avg(rating)            AS average_score, 
+#                      Count(reviews.book_id) AS review_count 
+#               FROM   books 
+#                      FULL OUTER JOIN reviews 
+#                             ON books.book_id = reviews.book_id 
+#               WHERE  isbn=:isbn
+#               GROUP  BY reviews.book_id, 
+#                      {','.join(columns[:4])}"""
 
 
-rows = db.execute(stats_query, {"isbn":'J0670037729'}).fetchall()
-if len(rows):
-    json_dict={columns[x]: rows[0][x] for x in range(len(columns))}
-    json_dict["average_score"] = float(json_dict["average_score"])
-else:
-    json_dict='crap'
+# rows = db.execute(stats_query, {"isbn":'J0670037729'}).fetchall()
+# if len(rows):
+#     json_dict={columns[x]: rows[0][x] for x in range(len(columns))}
+#     json_dict["average_score"] = float(json_dict["average_score"])
+# else:
+#     json_dict='crap'
+
+json_dict = finda_book_info(book_id="468dsfsdfdf4")
 
 print(json_dict)
 app = Flask(__name__)
