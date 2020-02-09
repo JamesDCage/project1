@@ -9,17 +9,15 @@ from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required, good_reads_info
 
-from tempfile import mkdtemp  # DO I NEED THIS??
-
-app = Flask(__name__)
-
 # REMOVE FOLLOWING LINE BEFORE SUBMITTING
 # os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
-
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
+
+# Create Flask application
+app = Flask(__name__)
 
 # Configure session to use filesystem
 app.config["SESSION_PERMANENT"] = False
@@ -77,7 +75,6 @@ def give_json(isbn):
 
     # If book exists in database, convert to json and return.
     if json_dict:
-        app = Flask(__name__)
         with app.app_context():
             book_json = jsonify(json_dict)
         return book_json
@@ -120,7 +117,6 @@ def book(book_id):
             book_dict["gr_reviews"] = None
     else:
         # No books found 
-        flash("OOPS! There's no record of that book in our database.")
         return "No such book.", 404      
 
     # Now get all reviews for this book
@@ -161,24 +157,23 @@ def index():
             flash("Please select the field to search ('Title', 'Author', or 'ISBN')")
             return render_template("index.html")
 
-
-        # SQL command to find books
-
         max_books = 200 # Maximium number of results to return
         # Format search text for "like" search in SQL
         search_text = '%' + search_text + '%'
 
+        # SQL command to find books
         find_books = f"""
             SELECT * 
             FROM books 
             WHERE UPPER({field_name}) LIKE UPPER(:searchtext) limit {max_books}"""
 
-        rows = db.execute(find_books, {"searchtext": search_text}).fetchall()
+        rows = db.execute(find_books, {"searchtext":search_text}).fetchall()
         hits = len(rows)
 
+        # Define sort key. "item" is passed by sort method of list (below)
         # Sort by field searched on. For example, in order by title if title search.
         def s_key(item):
-
+            
             def clip_article(title):
                 # Remove leading articles (a, an, the) from title if present
                 # Only do this if there are 2 or more words in the title.
@@ -193,8 +188,8 @@ def index():
             elif field_name == "title":
                 return clip_article(item[2])
             else:
-                # Default to Author
-                return item[3].upper()+clip_article(item[2])  # Sort by Author first, then by title.
+                # Default to sorting by author first, then by title.
+                return item[3].upper()+clip_article(item[2])  
 
         if len(rows):
             # Sort, using key defined above
@@ -278,7 +273,6 @@ def register():
             return render_template("register.html")
 
         else:
-
             # Be sure the user name is not duplicated. First, query database for username
             rows = db.execute("SELECT * FROM users WHERE username = :username",
                               {"username": request.form.get("username")}).fetchall()
@@ -289,8 +283,8 @@ def register():
                 return render_template("register.html")
 
             else:
-
                 # Now insert user into database
+                # Store hash of password, not password itself.
                 pw_hash = generate_password_hash(request.form.get("password"))
                 new_user = request.form.get("username")
                 name = request.form.get("name")
