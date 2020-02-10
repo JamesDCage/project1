@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required, good_reads_info
 
 # REMOVE FOLLOWING LINE BEFORE SUBMITTING
-os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
+# os.environ["DATABASE_URL"] = "postgres://sjxgnmkszhvvdc:d8add5033b1fec41278632fc2d7c50ddd0a28f07f066c9e3589cee6dbda7974c@ec2-174-129-33-181.compute-1.amazonaws.com:5432/d8oipsseui1nq1"
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
@@ -30,7 +30,7 @@ db = scoped_session(sessionmaker(bind=engine))
 
 
 def finda_book_info(isbn=None, book_id=None):
-    """ For a book represented by its ISBN, return info from Finda Book website """
+    """ Create dictionary of info about a single book from Finda Book website """
 
     # Determine field to search on
     if isbn:
